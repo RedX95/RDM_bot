@@ -39,6 +39,19 @@ def parse_hours_input(text: str) -> float | None:
     return None
 
 
+def parse_hours_comment_input(text: str) -> tuple[float | None, str | None, bool]:
+    if not re.search(r"[-–—]", text):
+        return parse_hours_input(text), None, False
+
+    time_part, comment_part = re.split(r"\s*[-–—]\s*", text, maxsplit=1)
+    hours = parse_hours_input(time_part)
+    comment = comment_part.strip()
+    if hours is None or not comment:
+        return None, None, True
+
+    return hours, comment, True
+
+
 def normalize_hours(hours: float) -> float | None:
     if hours <= 0 or hours > 24:
         return None

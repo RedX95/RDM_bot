@@ -79,6 +79,15 @@ class RedmineClient:
 
             offset = current_offset + current_limit
 
+    async def get_current_user(self) -> dict[str, Any]:
+        data = await self._get_json("users/current.json")
+        user = data.get("user")
+
+        if not isinstance(user, dict):
+            raise RedmineApiError("Unexpected Redmine response: user is not an object")
+
+        return user
+
     async def get_project(self, project_id: int | str) -> dict[str, Any]:
         data = await self._get_json(f"projects/{project_id}.json")
         project = data.get("project")
@@ -93,16 +102,21 @@ class RedmineClient:
         project_id: int | str,
         offset: int = 0,
         limit: int = 10,
+        assigned_to_id: int | str | None = None,
     ) -> dict[str, Any]:
+        params: dict[str, int | str] = {
+            "project_id": project_id,
+            "status_id": "*",
+            "offset": offset,
+            "limit": limit,
+            "sort": "updated_on:desc",
+        }
+        if assigned_to_id is not None:
+            params["assigned_to_id"] = assigned_to_id
+
         data = await self._get_json(
             "issues.json",
-            params={
-                "project_id": project_id,
-                "status_id": "*",
-                "offset": offset,
-                "limit": limit,
-                "sort": "updated_on:desc",
-            },
+            params=params,
         )
         issues = data.get("issues")
 

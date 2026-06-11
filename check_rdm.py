@@ -13,7 +13,11 @@ async def main() -> None:
     api_key = os.getenv("RDM_API_KEY", "").strip()
 
     if not base_url or not api_key:
-        raise RedmineConfigError("Заполните RDM_BASE_URL и RDM_API_KEY в .env")
+        print(
+            "Для check_rdm.py заполните RDM_BASE_URL и RDM_API_KEY в .env.\n"
+            "Для самого Telegram-бота RDM_API_KEY не нужен: сотрудники входят через /login."
+        )
+        return
 
     async with RedmineClient(base_url=base_url, api_key=api_key) as redmine:
         print(f"Проверяю Redmine API: {redmine.projects_url}")

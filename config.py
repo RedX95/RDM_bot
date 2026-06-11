@@ -10,7 +10,6 @@ from rdm_client import RedmineConfigError
 class Settings:
     bot_token: str
     rdm_base_url: str
-    rdm_api_key: str
 
 
 def load_settings() -> Settings:
@@ -18,14 +17,12 @@ def load_settings() -> Settings:
 
     bot_token = os.getenv("BOT_TOKEN", "").strip()
     rdm_base_url = os.getenv("RDM_BASE_URL", "").strip()
-    rdm_api_key = os.getenv("RDM_API_KEY", "").strip()
 
     missing = [
         name
         for name, value in (
             ("BOT_TOKEN", bot_token),
             ("RDM_BASE_URL", rdm_base_url),
-            ("RDM_API_KEY", rdm_api_key),
         )
         if not value
     ]
@@ -37,5 +34,4 @@ def load_settings() -> Settings:
     return Settings(
         bot_token=bot_token,
         rdm_base_url=rdm_base_url,
-        rdm_api_key=rdm_api_key,
     )
