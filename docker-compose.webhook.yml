@@ -1,0 +1,18 @@
+services:
+  rdm-webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile.webhook
+    container_name: rdm-webhook
+    restart: unless-stopped
+    init: true
+    env_file:
+      - ./deploy/webhook.env
+    environment:
+      PROJECT_DIR: /repo
+      DEPLOY_BRANCH: refactor-bot-structure
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./:/repo
+      - /var/run/docker.sock:/var/run/docker.sock

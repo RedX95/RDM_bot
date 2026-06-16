@@ -1,0 +1,28 @@
+FROM docker:27-cli
+
+ARG WEBHOOK_VERSION=2.8.2
+
+RUN apk add --no-cache \
+    bash \
+    ca-certificates \
+    curl \
+    docker-cli-compose \
+    git \
+    util-linux
+
+RUN curl -fsSL \
+      "https://github.com/adnanh/webhook/releases/download/${WEBHOOK_VERSION}/webhook-linux-amd64.tar.gz" \
+      -o /tmp/webhook.tar.gz \
+    && tar -xzf /tmp/webhook.tar.gz -C /tmp \
+    && mv /tmp/webhook-linux-amd64/webhook /usr/local/bin/webhook \
+    && chmod +x /usr/local/bin/webhook \
+    && rm -rf /tmp/webhook.tar.gz /tmp/webhook-linux-amd64
+
+WORKDIR /repo
+
+COPY deploy/webhook-entrypoint.sh /usr/local/bin/webhook-entrypoint.sh
+RUN chmod +x /usr/local/bin/webhook-entrypoint.sh
+
+EXPOSE 9000
+
+ENTRYPOINT ["/usr/local/bin/webhook-entrypoint.sh"]

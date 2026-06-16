@@ -7,6 +7,7 @@ __pycache__/
 .mypy_cache/
 bot.db
 data/
+deploy/webhook.env
 *.sqlite
 *.sqlite3
 *.log
