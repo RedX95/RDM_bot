@@ -206,7 +206,7 @@ def build_activities_keyboard(activities: list[dict[str, Any]]) -> InlineKeyboar
 def build_confirmation_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🚀 Отправить", callback_data="submit_time_entry")],
+            [InlineKeyboardButton(text="🚀 Отпdddddddddddddddddddравить", callback_data="submit_time_entry")],
             [InlineKeyboardButton(text="📅 Изменить дату", callback_data="date_change")],
             [InlineKeyboardButton(text="🧩 Изменить деятельность", callback_data="activity_change")],
             [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")],
