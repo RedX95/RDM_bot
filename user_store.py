@@ -1,15 +1,17 @@
-# user_store.py
-
+import os
 import sqlite3
 from pathlib import Path
 
 
 class UserStore:
-    def __init__(self, db_path: str = "bot.db") -> None:
+    def __init__(self, db_path: str | None = None) -> None:
+        db_path = db_path or os.getenv("BOT_DB_PATH", "bot.db")
         self.db_path = Path(db_path)
         self._memory_connection: sqlite3.Connection | None = None
         if db_path == ":memory:":
             self._memory_connection = sqlite3.connect(db_path)
+        else:
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
     def _connect(self) -> sqlite3.Connection:

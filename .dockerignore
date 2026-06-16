@@ -7,6 +7,7 @@ __pycache__
 .mypy_cache
 .env
 bot.db
+data
 *.sqlite
 *.sqlite3
 *.log

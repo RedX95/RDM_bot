@@ -6,6 +6,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 bot.db
+data/
 *.sqlite
 *.sqlite3
 *.log
