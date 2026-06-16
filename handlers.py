@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import logging
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
@@ -30,7 +30,8 @@ from keyboards import build_tracking_start_keyboard
 from parsers import parse_hours_comment_input, parse_issue_id
 from rdm_client import RedmineApiError, RedmineClient, RedmineConfigError
 from states import RegistrationFlow, TimeEntryFlow
-from telegram_helpers import answer_safely, delete_message_by_id_safely
+from telegram_helpers import answer_callback_safely, answer_safely
+from telegram_helpers import delete_message_by_id_safely
 from telegram_helpers import delete_message_safely, edit_message_by_id_safely
 from telegram_helpers import replace_message_safely
 from user_store import UserStore
@@ -170,7 +171,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "tracking_start")
     async def tracking_start(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         if await start_repeat_time_entry_from_callback(callback, state):
             return
 
@@ -224,7 +225,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "cancel")
     async def cancel_callback(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer("Отменено")
+        await answer_callback_safely(callback, "Отменено")
         await state.clear()
         if user_store.get_api_key(callback.from_user.id) and callback.message:
             await edit_callback(
@@ -242,7 +243,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("favorites_page:"))
     async def favorites_setup_page(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         page = int(callback.data.split(":", 1)[1])
         await show_favorites_setup_page(callback, state, user_store, page)
 
@@ -254,25 +255,25 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
         data = await state.get_data()
         project = find_by_id(data.get("projects", []), project_id)
         if not project:
-            await callback.answer("Проект не найден", show_alert=True)
+            await answer_callback_safely(callback, "Проект не найден", show_alert=True)
             return
 
         if user_store.is_favorite_project(callback.from_user.id, project_id):
             user_store.delete_favorite_project(callback.from_user.id, project_id)
-            await callback.answer("Убрано из избранного")
+            await answer_callback_safely(callback, "Убрано из избранного")
         else:
             user_store.save_favorite_project(
                 callback.from_user.id,
                 project_id,
                 str(project.get("name") or project_id),
             )
-            await callback.answer("Добавлено в избранное")
+            await answer_callback_safely(callback, "Добавлено в избранное")
 
         await show_favorites_setup_page(callback, state, user_store, page)
 
     @router.callback_query(F.data == "favorites_done")
     async def favorites_setup_done(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer("Готово")
+        await answer_callback_safely(callback, "Готово")
         await state.clear()
         await edit_callback(
             callback,
@@ -283,7 +284,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("projects_page:"))
     async def projects_page(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -305,7 +306,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("project:"))
     async def choose_project(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -329,7 +330,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("issues_page:"))
     async def issues_page(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is not None:
                 offset = int(callback.data.split(":", 1)[1])
@@ -337,7 +338,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("issues_scope:"))
     async def issues_scope(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         scope = callback.data.split(":", 1)[1]
         if scope not in {"mine", "all"}:
             return
@@ -349,7 +350,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "back_to_projects")
     async def back_to_projects(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -371,7 +372,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("favorite_project:"))
     async def choose_favorite_project(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -396,7 +397,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("recent_issue:"))
     async def choose_recent_issue(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -406,7 +407,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("favorite_add:"))
     async def add_project_to_favorites(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer("Добавлено в избранное")
+        await answer_callback_safely(callback, "Добавлено в избранное")
         data = await state.get_data()
         project_id = int(callback.data.split(":", 1)[1])
         project_name = str(data.get("project_name") or project_id)
@@ -424,7 +425,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("favorite_remove:"))
     async def remove_project_from_favorites(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer("Убрано из избранного")
+        await answer_callback_safely(callback, "Убрано из избранного")
         data = await state.get_data()
         project_id = int(callback.data.split(":", 1)[1])
         user_store.delete_favorite_project(callback.from_user.id, project_id)
@@ -441,7 +442,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("issue:"))
     async def choose_issue(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -451,7 +452,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "issue_number_prompt")
     async def ask_issue_number(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         await state.set_state(TimeEntryFlow.entering_issue_number)
         prompt_message = await edit_callback(
             callback,
@@ -475,7 +476,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("hours:"))
     async def choose_hours(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         hours = float(callback.data.split(":", 1)[1])
         await state.update_data(hours=hours, spent_on=date.today().isoformat())
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
@@ -484,7 +485,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "hours_custom")
     async def ask_custom_hours(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         await state.set_state(TimeEntryFlow.entering_hours)
         prompt_message = await edit_callback(
             callback,
@@ -525,7 +526,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("date_shift:"))
     async def shift_date(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         days = int(callback.data.split(":", 1)[1])
         data = await state.get_data()
         current_date = date.fromisoformat(data.get("spent_on", date.today().isoformat()))
@@ -534,13 +535,13 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "date_today")
     async def set_today(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         await state.update_data(spent_on=date.today().isoformat())
         await show_date_step(callback, state)
 
     @router.callback_query(F.data == "date_confirm")
     async def confirm_date(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         await state.set_state(TimeEntryFlow.confirming)
         await edit_callback(
             callback,
@@ -550,7 +551,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "date_change")
     async def change_date_from_confirmation(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         data = await state.get_data()
         if not data.get("spent_on"):
             await state.update_data(spent_on=date.today().isoformat())
@@ -560,7 +561,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "activity_change")
     async def change_activity_from_confirmation(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         data = await state.get_data()
         activities = data.get("activities", [])
         if not activities:
@@ -586,7 +587,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data.startswith("activity:"))
     async def choose_activity(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         activity_id = int(callback.data.split(":", 1)[1])
         data = await state.get_data()
         activity = find_by_id(data.get("activities", []), activity_id)
@@ -641,7 +642,7 @@ def build_router(rdm_base_url: str, user_store: UserStore) -> Router:
 
     @router.callback_query(F.data == "submit_time_entry")
     async def submit_time_entry(callback: CallbackQuery, state: FSMContext) -> None:
-        await callback.answer()
+        await answer_callback_safely(callback)
         async with redmine_from_callback(callback, state, rdm_base_url, user_store) as redmine:
             if redmine is None:
                 return
@@ -1674,3 +1675,5 @@ def keyboard_for_callback(callback: CallbackQuery, user_store: UserStore):
     if user_store.get_api_key(callback.from_user.id):
         return build_idle_keyboard()
     return build_login_keyboard()
+
+

@@ -34,6 +34,7 @@ async def main() -> None:
 
     while True:
         try:
+            await bot.delete_webhook(drop_pending_updates=True)
             await dispatcher.start_polling(bot)
             break
         except TelegramNetworkError as error:

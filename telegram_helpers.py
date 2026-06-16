@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
-from aiogram.types import InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
 from aiogram.types import ReplyKeyboardRemove
 
 
@@ -40,6 +40,25 @@ async def answer_safely(
     except (asyncio.TimeoutError, TelegramNetworkError) as error:
         logging.warning("Could not send Telegram message: %s", error)
         return None
+
+
+async def answer_callback_safely(
+    callback: CallbackQuery,
+    text: str | None = None,
+    show_alert: bool | None = None,
+) -> None:
+    try:
+        await asyncio.wait_for(
+            callback.answer(text=text, show_alert=show_alert),
+            timeout=5,
+        )
+    except TelegramBadRequest as error:
+        if "query is too old" in str(error).lower() or "query id is invalid" in str(error).lower():
+            logging.info("Skipped expired Telegram callback answer: %s", error)
+            return
+        logging.warning("Could not answer Telegram callback: %s", error)
+    except (asyncio.TimeoutError, TelegramNetworkError) as error:
+        logging.warning("Could not answer Telegram callback: %s", error)
 
 
 async def replace_message_safely(
