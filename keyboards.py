@@ -180,7 +180,7 @@ def build_date_keyboard() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(text="⬅️ -1 день", callback_data="date_shift:-1"),
                 InlineKeyboardButton(text="📍 Сегодня", callback_data="date_today"),
-                InlineKeyboardButton(text="+1 день ➡️", callback_data="date_shift:1"),
+                InlineKeyboardButton(text="+1 день ➡️➡️", callback_data="date_shift:1"),
             ],
             [InlineKeyboardButton(text="✅ Подтвердить дату", callback_data="date_confirm")],
             [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")],
@@ -206,7 +206,7 @@ def build_activities_keyboard(activities: list[dict[str, Any]]) -> InlineKeyboar
 def build_confirmation_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🚀 Отпdddddddddddddddddddравить", callback_data="submit_time_entry")],
+            [InlineKeyboardButton(text="🚀 Отправить", callback_data="submit_time_entry")],
             [InlineKeyboardButton(text="📅 Изменить дату", callback_data="date_change")],
             [InlineKeyboardButton(text="🧩 Изменить деятельность", callback_data="activity_change")],
             [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")],
