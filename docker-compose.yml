@@ -1,0 +1,9 @@
+services:
+  rdm-bot:
+    build: .
+    container_name: rdm-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./bot.db:/app/bot.db
