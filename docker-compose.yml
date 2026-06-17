@@ -1,3 +1,5 @@
+name: rdm_bot
+
 services:
   rdm-bot:
     build: .

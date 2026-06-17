@@ -1,3 +1,5 @@
+name: rdm_webhook
+
 services:
   rdm-webhook:
     build:
@@ -11,6 +13,8 @@ services:
     environment:
       PROJECT_DIR: /repo
       DEPLOY_BRANCH: refactor-bot-structure
+      APP_COMPOSE_PROJECT_NAME: rdm_bot
+      DEPLOY_LOG_FILE: /repo/deploy.log
     ports:
       - "9000:9000"
     volumes:

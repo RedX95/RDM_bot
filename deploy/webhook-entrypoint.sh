@@ -16,7 +16,7 @@ cat > /tmp/hooks.json <<EOF
     "pass-arguments-to-command": [
       {
         "source": "string",
-        "name": "/repo/deploy/redeploy.sh"
+        "name": "/repo/deploy/webhook-dispatch.sh"
       }
     ],
     "response-message": "RDM bot deploy started",
@@ -24,7 +24,7 @@ cat > /tmp/hooks.json <<EOF
       "and": [
         {
           "match": {
-            "type": "payload-hash-sha256",
+            "type": "payload-hmac-sha256",
             "secret": "${WEBHOOK_SECRET}",
             "parameter": {
               "source": "header",

@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-/repo}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-refactor-bot-structure}"
+APP_COMPOSE_PROJECT_NAME="${APP_COMPOSE_PROJECT_NAME:-rdm_bot}"
 LOCK_FILE="${LOCK_FILE:-/tmp/rdm-bot-deploy.lock}"
 
 exec 9>"$LOCK_FILE"
@@ -23,7 +24,7 @@ git checkout "$DEPLOY_BRANCH"
 git reset --hard "origin/$DEPLOY_BRANCH"
 
 echo "==> Rebuilding bot container"
-docker compose -f docker-compose.yml up --build -d --remove-orphans rdm-bot
+docker compose -p "$APP_COMPOSE_PROJECT_NAME" -f docker-compose.yml up --build -d rdm-bot
 
 echo "==> Cleaning old Docker resources"
 docker system prune -f
