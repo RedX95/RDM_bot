@@ -180,7 +180,7 @@ def build_date_keyboard() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(text="⬅️ -1 день", callback_data="date_shift:-1"),
                 InlineKeyboardButton(text="📍 Сегодня", callback_data="date_today"),
-                InlineKeyboardButton(text="+1 день ➡️➡️", callback_data="date_shift:1"),
+                InlineKeyboardButton(text="+1 день ➡️", callback_data="date_shift:1"),
             ],
             [InlineKeyboardButton(text="✅ Подтвердить дату", callback_data="date_confirm")],
             [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")],
